@@ -1,0 +1,17 @@
+{
+  "mode": "balanced",
+  "scoringOverrides": {
+    "chemistryWeight": 0.55,
+    "strengthWeight": 0.30,
+    "ratingWeight": 0.15,
+    "iconBonus": 4.0,
+    "heroBonus": 3.0,
+    "specialCardBonus": 2.0,
+    "positionWeights": {
+      "ST": 1.05,
+      "GK": 0.95
+    }
+  },
+  "candidateLimit": 12,
+  "formations": ["4-3-3", "4-2-3-1", "4-4-2"]
+}

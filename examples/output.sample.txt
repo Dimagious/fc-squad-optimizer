@@ -6,10 +6,10 @@ Players loaded: 42 (0 skipped)
 Searching best XI (mode: balanced, 9 formation(s))...
 
 ════════════════════════════════════════════════════════════════════════════════════════
-  FC OPTIMIZER — BEST STARTING XI
+  FC OPTIMIZER - BEST STARTING XI
 ════════════════════════════════════════════════════════════════════════════════════════
 
-── SUMMARY ─────────────────────────────────────────────────────────────────────
+-- SUMMARY ---------------------------------------------------------------------
   Formation  : 4-2-2-2
   Mode       : balanced
   Chemistry  : [████████████████████] 33/33
@@ -17,10 +17,10 @@ Searching best XI (mode: balanced, 9 formation(s))...
   Strength   : 925.9
   Formations : 9 searched, 0 skipped (no eligible players)
 
-── STARTING XI ─────────────────────────────────────────────────────────────────
+-- STARTING XI -----------------------------------------------------------------
 
   Slot         Player                          Rat  Chem  Nation / League
-  ────────────────────────────────────────────────────────────────────────────────
+  --------------------------------------------------------------------------------
   GK           Alisson                          90   ●●●  Brazil / Premier League
   RB           Trent                            87   ●●●  England / Premier League
   CB           Van Dijk                         90   ●●●  Netherlands / Premier League
@@ -33,30 +33,30 @@ Searching best XI (mode: balanced, 9 formation(s))...
   ST           Haaland                          94   ●●●  Norway / Premier League
   ST           Mbappe                           93   ●●●  France / La Liga
 
-── WHY THIS LINEUP ─────────────────────────────────────────────────────────────
+-- WHY THIS LINEUP -------------------------------------------------------------
   Formation: 4-2-2-2 | Mode: balanced
   Total chemistry: 33/33 | Average rating: 90.5 | Total rating: 995
-  ✓ Perfect chemistry (33/33) — all players are fully linked
-  Icons: Messi — bridging chemistry links across nations/leagues
-  Heroes: De Bruyne — providing league-based chemistry boosts
+  Perfect chemistry (33/33) - all players are fully linked
+  Icons: Messi - bridging chemistry links across nations/leagues
+  Heroes: De Bruyne - providing league-based chemistry boosts
 
-── SWAP SUGGESTIONS ─────────────────────────────────────────────────────────────
+-- SWAP SUGGESTIONS ------------------------------------------------------------
   Potential upgrades and trade-offs:
 
-  GK      Alisson                → Ter Stegen            [±0 chem, -1 rat]
-  CB2     Virgil2                → Dias                  [±0 chem, -1 rat]
-  LB      Alaba                  → Robertson             [±0 chem, -1 rat]
-  CAM1    Messi                  → Salah                 [±0 chem, -1 rat]
-  RB      Trent                  → Carvajal              [±0 chem, -2 rat]
-  CB1     Van Dijk               → Dias                  [±0 chem, -2 rat]
-  ST2     Mbappe                 → Ronaldo               [±0 chem, -2 rat]
-  ST1     Haaland                → Ronaldo               [±0 chem, -3 rat]
+  GK      Alisson                -> Ter Stegen            [+-0 chem, -1 rat]
+  CB2     Virgil2                -> Dias                  [+-0 chem, -1 rat]
+  LB      Alaba                  -> Robertson             [+-0 chem, -1 rat]
+  CAM1    Messi                  -> Salah                 [+-0 chem, -1 rat]
+  RB      Trent                  -> Carvajal              [+-0 chem, -2 rat]
+  CB1     Van Dijk               -> Dias                  [+-0 chem, -2 rat]
+  ST2     Mbappe                 -> Ronaldo               [+-0 chem, -2 rat]
+  ST1     Haaland                -> Ronaldo               [+-0 chem, -3 rat]
 
-── ALTERNATIVE LINEUPS (top 3) ──────────────────────────────────────────────────
+-- ALTERNATIVE LINEUPS (top 3) -------------------------------------------------
   #2  4-2-2-2   Chem: [████████████████████] 33/33   Avg: 90.5   [Same chemistry and rating, different players]
   #3  4-2-2-2   Chem: [████████████████████] 33/33   Avg: 90.5   [Same chemistry and rating, different players]
 
-── BENCH (7 PLAYERS) ────────────────────────────────────────────────────────────
+-- BENCH (7 PLAYERS) -----------------------------------------------------------
       Courtois               90   Backup goalkeeper
       Dias                   88   Defensive cover
       Militao                87   Defensive cover
@@ -70,7 +70,7 @@ Searching best XI (mode: balanced, 9 formation(s))...
 Done in 1528ms
 
 
-────────────────────────────────────────────────────────────────────────────────────────
+--------------------------------------------------------------------------------
 Other example runs:
 
 $ node dist/cli/index.js --input examples/club.sample.csv --mode max-chem --formation 4-3-3 --verbose
@@ -80,7 +80,7 @@ $ node dist/cli/index.js --input examples/club.sample.csv --mode max-rating
   (prioritises highest total rating, chemistry tracked but not primary)
 
 $ node dist/cli/index.js --input examples/club.sample.csv --mode meta --formation 4-2-3-1
-  (role-aware scoring — attackers weighted more heavily)
+  (role-aware scoring - attackers weighted more heavily)
 
 $ node dist/cli/index.js --input examples/club.sample.csv --json | jq '.bestScore'
   (structured JSON output, pipe-friendly)

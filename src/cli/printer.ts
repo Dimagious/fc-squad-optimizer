@@ -115,7 +115,7 @@ export function printResult(
   const { bestLineup, bestScore, bestChemistry, alternatives, swapSuggestions, bench, explanation, meta } = result;
 
   console.log('\n' + '═'.repeat(88));
-  console.log(c.bold(c.green('  FC OPTIMIZER — BEST STARTING XI')));
+  console.log(c.bold(c.green('  FC OPTIMIZER - BEST STARTING XI')));
   console.log('═'.repeat(88));
 
   // Summary

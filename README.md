@@ -1,9 +1,9 @@
 # fc-squad-optimizer
 
-A production-quality CLI tool that reads a CSV export of your EA Sports FC club and finds the best possible Starting XI — maximising chemistry, squad strength, and player ratings across all formations simultaneously.
+A production-quality CLI tool that reads a CSV export of your EA Sports FC club and finds the best possible Starting XI - maximising chemistry, squad strength, and player ratings across all formations simultaneously.
 
 ```
-  FC OPTIMIZER — BEST STARTING XI
+  FC OPTIMIZER - BEST STARTING XI
 ══════════════════════════════════════════════════════════════
   Formation  : 4-2-2-2
   Mode       : balanced
@@ -14,17 +14,17 @@ A production-quality CLI tool that reads a CSV export of your EA Sports FC club 
 
 ## Features
 
-- **Multi-formation search** — evaluates 9 built-in formations in parallel and picks the best
-- **4 optimization modes** — `max-chem`, `balanced`, `max-rating`, `meta`
-- **FC 25 chemistry engine** — models club/league/nation links, Icons, and Heroes accurately
-- **Explanation block** — tells you *why* this lineup was chosen
-- **Swap suggestions** — e.g. "replace X with Y → ±0 chem, +3 rating"
-- **Alternative lineups** — shows the top-N lineups with trade-off deltas
-- **Bench suggestions** — fills 7 bench spots by role
-- **Configurable scoring weights** — override everything via JSON config
-- **Three CSV format adapters** — Club Analyzer, FUTWIZ/FUTbin, and a generic fuzzy-match fallback
-- **JSON output** — pipe-friendly structured output for integrations
-- **Fast** — typical 300-card club completes in under 1 second
+- **Multi-formation search** - evaluates 9 built-in formations in parallel and picks the best
+- **4 optimization modes** - `max-chem`, `balanced`, `max-rating`, `meta`
+- **FC 25 chemistry engine** - models club/league/nation links, Icons, and Heroes accurately
+- **Explanation block** - tells you *why* this lineup was chosen
+- **Swap suggestions** - e.g. "replace X with Y: +-0 chem, +3 rating"
+- **Alternative lineups** - shows the top-N lineups with trade-off deltas
+- **Bench suggestions** - fills 7 bench spots by role
+- **Configurable scoring weights** - override everything via JSON config
+- **Three CSV format adapters** - Club Analyzer, FUTWIZ/FUTbin, and a generic fuzzy-match fallback
+- **JSON output** - pipe-friendly structured output for integrations
+- **Fast** - typical 300-card club completes in under 1 second
 
 ## Installation
 
@@ -45,7 +45,7 @@ fc-optimizer --input club.csv
 ## Usage
 
 ```bash
-# Quickstart — balanced mode, all 9 formations
+# Quickstart - balanced mode, all 9 formations
 node dist/cli/index.js --input club.csv
 
 # With bench and top-3 alternatives
@@ -85,7 +85,7 @@ node dist/cli/index.js --input club.csv --config config/scoring.config.json
 | `--bench` | off | Show 7 bench suggestions by role |
 | `--verbose` | off | Show per-player chemistry link breakdown |
 | `--json` | off | Output structured JSON instead of formatted table |
-| `--config <path>` | — | JSON file with scoring weight overrides |
+| `--config <path>` | - | JSON file with scoring weight overrides |
 
 ## Optimization Modes
 
@@ -108,7 +108,7 @@ The parser auto-detects your export format from the header row:
 
 | Format | Detection | Notes |
 |--------|-----------|-------|
-| **Club Analyzer** | `Overall` + `Alt Pos` + `Card Type` columns | Recommended — richest data |
+| **Club Analyzer** | `Overall` + `Alt Pos` + `Card Type` columns | Recommended - richest data |
 | **FUTWIZ / FUTbin** | `PAC`, `SHO`, `DRI` stat columns | Individual stats used if OVR missing |
 | **Generic** | Fuzzy column matching | Works with most custom exports |
 
@@ -129,17 +129,17 @@ See [`examples/club.sample.csv`](examples/club.sample.csv) for a full example.
 
 ```
 ════════════════════════════════════════════════════════════════
-  FC OPTIMIZER — BEST STARTING XI
+  FC OPTIMIZER - BEST STARTING XI
 ════════════════════════════════════════════════════════════════
 
-── SUMMARY ─────────────────────────────────────────────
+-- SUMMARY -----------------------------------------------------
   Formation  : 4-2-2-2
   Mode       : balanced
   Chemistry  : [████████████████████] 33/33
   Avg Rating : 91   (Total: 995)
   Strength   : 925.9
 
-── STARTING XI ─────────────────────────────────────────
+-- STARTING XI -------------------------------------------------
 
   Slot         Player                    Rat  Chem  Nation / League
   GK           Alisson                    90  ●●●   Brazil / Premier League
@@ -154,15 +154,15 @@ See [`examples/club.sample.csv`](examples/club.sample.csv) for a full example.
   ST           Haaland                    94  ●●●   Norway / Premier League
   ST           Mbappe                     93  ●●●   France / La Liga
 
-── WHY THIS LINEUP ─────────────────────────────────────
-  ✓ Perfect chemistry (33/33) — all players are fully linked
-  Icons: Messi — bridging chemistry links across nations/leagues
-  Heroes: De Bruyne — providing league-based chemistry boosts
+-- WHY THIS LINEUP ---------------------------------------------
+  Perfect chemistry (33/33) - all players are fully linked
+  Icons: Messi - bridging chemistry links across nations/leagues
+  Heroes: De Bruyne - providing league-based chemistry boosts
 
-── SWAP SUGGESTIONS ────────────────────────────────────
-  GK      Alisson     → Ter Stegen     [±0 chem, -1 rat]
-  CDM2    Bellingham  → Valverde       [±0 chem, -4 rat]
-  ST1     Haaland     → Ronaldo        [±0 chem, -3 rat]
+-- SWAP SUGGESTIONS --------------------------------------------
+  GK      Alisson     -> Ter Stegen     [+-0 chem, -1 rat]
+  CDM2    Bellingham  -> Valverde       [+-0 chem, -4 rat]
+  ST1     Haaland     -> Ronaldo        [+-0 chem, -3 rat]
 ```
 
 Full sample in [`examples/output.sample.txt`](examples/output.sample.txt).
@@ -214,11 +214,11 @@ The parser uses an adapter registry: it inspects the CSV header row and dispatch
 
 ### 3. Formation System
 
-Nine formations are defined as pure data (`FormationSlot[]`). Each slot specifies which position codes it accepts — for example, the CDM slot accepts `['CDM', 'CM']`. This allows flexible assignment without separate position-conversion logic.
+Nine formations are defined as pure data (`FormationSlot[]`). Each slot specifies which position codes it accepts - for example, the CDM slot accepts `['CDM', 'CM']`. This allows flexible assignment without separate position-conversion logic.
 
 ### 4. Chemistry Engine (FC 25 model)
 
-Individual chemistry (0–3) is computed per player based on connection points with teammates:
+Individual chemistry (0-3) is computed per player based on connection points with teammates:
 
 | Link type | Points |
 |-----------|--------|
@@ -226,7 +226,7 @@ Individual chemistry (0–3) is computed per player based on connection points w
 | League link | 2 pts |
 | Nation link | 2 pts |
 
-Thresholds: ≥6 pts → 3 chem, ≥3 pts → 2 chem, ≥1 pt → 1 chem.
+Thresholds: >=6 pts -> 3 chem, >=3 pts -> 2 chem, >=1 pt -> 1 chem.
 
 **Icons** always receive 3 individual chemistry and act as universal bridges (they count as a nation + league link for every teammate). **Heroes** always receive 3 individual chemistry and provide league/nation bridges to matching teammates.
 
@@ -239,7 +239,7 @@ Squad chemistry = sum of all 11 individual chemistries (max 33).
 For each formation:
 
 1. Eligible players per slot are pre-computed and sorted by rating (top-N candidates)
-2. Slots are searched in **constraint order** — fewest candidates first, maximising early pruning
+2. Slots are searched in **constraint order** - fewest candidates first, maximising early pruning
 3. At each branch, an **optimistic upper bound** is computed: current rating + best remaining. If this can't beat the known-worst entry in the top-N, the branch is pruned
 4. A **hard cap of 50,000 iterations per formation** prevents runaway on very large clubs
 
@@ -250,12 +250,12 @@ All formations are searched in sequence; results are merged into a single ranked
 Each completed lineup is scored as:
 
 ```
-finalScore = chemistryWeight × (chemistry/33)
-           + strengthWeight  × (strengthScore / maxPossible)
-           + ratingWeight    × (totalRating / maxPossible)
+finalScore = chemistryWeight x (chemistry/33)
+           + strengthWeight  x (strengthScore / maxPossible)
+           + ratingWeight    x (totalRating / maxPossible)
 ```
 
-Strength score = sum of `(rating + cardBonus) × positionWeight` for each assignment. Mode presets set the weights; `--config` lets you override them at runtime.
+Strength score = sum of `(rating + cardBonus) x positionWeight` for each assignment. Mode presets set the weights; `--config` lets you override them at runtime.
 
 ### 7. Explanation + Swap Analysis
 
@@ -268,19 +268,19 @@ After finding the best lineup, the explainer:
 
 ```
 src/
-├── types/index.ts        — All TypeScript interfaces (PlayerCard, Formation, Lineup, …)
-├── formations/index.ts   — 9 formations as pure data (no logic)
-├── chemistry/fc25.ts     — FC 25 chemistry engine (implements ChemistryEngine interface)
-├── scorer/index.ts       — Configurable scoring presets per mode
-├── adapters/index.ts     — CSV parsing pipeline with adapter registry
-├── optimizer/index.ts    — Backtracking search with branch-and-bound pruning
-├── explainer/index.ts    — Explanation, swap suggestions, bench analysis
+├── types/index.ts        - All TypeScript interfaces (PlayerCard, Formation, Lineup, ...)
+├── formations/index.ts   - 9 formations as pure data (no logic)
+├── chemistry/fc25.ts     - FC 25 chemistry engine (implements ChemistryEngine interface)
+├── scorer/index.ts       - Configurable scoring presets per mode
+├── adapters/index.ts     - CSV parsing pipeline with adapter registry
+├── optimizer/index.ts    - Backtracking search with branch-and-bound pruning
+├── explainer/index.ts    - Explanation, swap suggestions, bench analysis
 └── cli/
-    ├── index.ts          — Commander CLI entrypoint
-    └── printer.ts        — Chalk terminal renderer + JSON output
+    ├── index.ts          - Commander CLI entrypoint
+    └── printer.ts        - Chalk terminal renderer + JSON output
 ```
 
-The core modules (`chemistry`, `scorer`, `optimizer`, `explainer`) have **no dependency on Node.js I/O** — they operate entirely on plain TypeScript types. This makes it easy to wrap them in a web API, Discord bot, or serverless function.
+The core modules (`chemistry`, `scorer`, `optimizer`, `explainer`) have **no dependency on Node.js I/O** - they operate entirely on plain TypeScript types. This makes it easy to wrap them in a web API, Discord bot, or serverless function.
 
 ## Running Tests
 
@@ -300,13 +300,13 @@ npm test
 
 - **Adjacency model**: Full pitch-layout adjacency (which exact pairs count as linked) is approximated with a "all teammates are neighbours" model. This slightly overestimates chemistry for wide/flank players.
 - **Position modifiers**: EA FC 25 allows some cards to be moved to adjacent positions at a chemistry penalty. Only explicit positions on the card are considered here.
-- **Attribute boosts**: The per-point in-game stat boost from chemistry is not modelled — we optimise for the chemistry score itself.
+- **Attribute boosts**: The per-point in-game stat boost from chemistry is not modelled - we optimise for the chemistry score itself.
 - **Season accuracy**: Chemistry rules change per FC edition. The engine is isolated behind a `ChemistryEngine` interface so a new season's rules can be implemented without touching the rest of the codebase.
 
 ## Roadmap
 
 - [ ] Formation-specific adjacency graphs for precise chemistry
-- [ ] Position modifier support (e.g. ST→CF at -1 chem)
+- [ ] Position modifier support (e.g. ST->CF at -1 chem)
 - [ ] Web UI wrapper
 - [ ] Discord bot integration
 - [ ] Import from EA FC API directly (no CSV needed)
@@ -324,8 +324,8 @@ npm run lint    # ESLint check
 
 ## License
 
-[MIT](LICENSE) — Dmitriy Yurkin
+[MIT](LICENSE) - Dmitriy Yurkin
 
 ---
 
-> **Support**: If this tool saved you time building squads, consider [buying me a coffee](https://buymeacoffee.com) ☕
+> **Support**: If this tool saved you time building squads, consider [buying me a coffee](https://buymeacoffee.com/dimagious) ☕

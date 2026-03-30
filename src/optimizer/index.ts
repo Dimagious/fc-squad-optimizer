@@ -11,9 +11,67 @@ import type {
   OptimizationMode,
   LineupScore,
   ChemistryBreakdown,
+  ChemistryEngine,
 } from '../types/index.js';
-import type { ChemistryEngine } from '../types/index.js';
 import { scoreLineup, compareScores } from '../scorer/index.js';
+
+// Bronze/silver non-special cards are never competitive in Best XI and only
+// bloat the search space. Special promos (TOTS, icons, heroes) have their own
+// cardType values and are unaffected by this filter.
+const EXCLUDED_CARD_TYPES: ReadonlySet<string> = new Set(['bronze', 'silver']);
+
+// Chemistry-aware candidate sorting: a maximally connected player gains up to
+// CHEM_SORT_BONUS "virtual rating points" so the backtracking explores
+// chemistry-rich branches before isolated high-rated players.
+// At 4 pts the bonus is meaningful but never overrides a 5+ rating gap.
+const CHEM_SORT_BONUS = 4;
+
+// Relative weights for estimating connectivity from pool frequencies.
+// Mirrors LINK_POINTS in the chemistry engine but used only for sort order.
+const POOL_CLUB_WEIGHT   = 3;
+const POOL_LEAGUE_WEIGHT = 1;
+const POOL_NATION_WEIGHT = 1;
+
+// ----------------------------------------------------------
+// Pool frequency analysis — exported for unit testing
+// ----------------------------------------------------------
+
+export interface PoolFrequency {
+  club:   Record<string, number>;
+  league: Record<string, number>;
+  nation: Record<string, number>;
+}
+
+/** Count how many players in a pool share each club/league/nation value. */
+export function buildPoolFrequency(players: PlayerCard[]): PoolFrequency {
+  const freq: PoolFrequency = { club: {}, league: {}, nation: {} };
+  for (const p of players) {
+    if (p.club)   freq.club[p.club]     = (freq.club[p.club]     ?? 0) + 1;
+    if (p.league) freq.league[p.league] = (freq.league[p.league] ?? 0) + 1;
+    if (p.nation) freq.nation[p.nation] = (freq.nation[p.nation] ?? 0) + 1;
+  }
+  return freq;
+}
+
+/**
+ * Estimate how well-connected a player is to the rest of the candidate pool.
+ * Higher = more potential chemistry links with other candidates.
+ */
+export function computeConnectivity(player: PlayerCard, freq: PoolFrequency): number {
+  return (freq.club[player.club]     ?? 0) * POOL_CLUB_WEIGHT +
+         (freq.league[player.league] ?? 0) * POOL_LEAGUE_WEIGHT +
+         (freq.nation[player.nation] ?? 0) * POOL_NATION_WEIGHT;
+}
+
+function chemAwareSortScore(
+  player: PlayerCard,
+  freq: PoolFrequency,
+  maxConnectivity: number,
+): number {
+  if (maxConnectivity === 0) return player.rating;
+  const connectivity = computeConnectivity(player, freq);
+  return player.rating + CHEM_SORT_BONUS * (connectivity / maxConnectivity);
+}
 
 export interface SearchOptions {
   mode: OptimizationMode;
@@ -44,12 +102,27 @@ function buildCandidates(
   players: PlayerCard[],
   limit: number,
 ): SlotCandidates[] | null {
+  // Strip bronze/silver cards — they are never competitive in Best XI.
+  const pool = players.filter(p => !EXCLUDED_CARD_TYPES.has(p.cardType));
+
+  // Pre-compute connectivity so chemistry-rich players are explored first,
+  // making early branches far more likely to survive pruning.
+  const freq = buildPoolFrequency(pool);
+  let maxConnectivity = 0;
+  for (const p of pool) {
+    const c = computeConnectivity(p, freq);
+    if (c > maxConnectivity) maxConnectivity = c;
+  }
+
   const result: SlotCandidates[] = [];
   for (let i = 0; i < formation.slots.length; i++) {
     const slot = formation.slots[i];
-    const eligible = players
+    const eligible = pool
       .filter(p => p.positions.some(pos => slot.accepts.includes(pos)))
-      .sort((a, b) => b.rating - a.rating)
+      .sort((a, b) =>
+        chemAwareSortScore(b, freq, maxConnectivity) -
+        chemAwareSortScore(a, freq, maxConnectivity),
+      )
       .slice(0, limit);
     if (eligible.length === 0) return null;
     result.push({ slotIndex: i, candidates: eligible });

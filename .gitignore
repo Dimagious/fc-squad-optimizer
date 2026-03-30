@@ -1,0 +1,32 @@
+# Build output
+dist/
+
+# Personal club export — add your own, don't commit private data
+club.csv
+
+# Dependencies
+node_modules/
+
+# Environment
+.env
+.env.*
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Jest coverage
+coverage/
+
+# TypeScript cache
+*.tsbuildinfo

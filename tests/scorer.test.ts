@@ -29,6 +29,19 @@ const FORMATION: Formation = {
     { id: 'ST1', accepts: ['ST'],  label: 'ST' },
     { id: 'ST2', accepts: ['ST'],  label: 'ST' },
   ],
+  adjacency: {
+    GK:  ['RB', 'CB1', 'CB2', 'LB'],
+    RB:  ['GK', 'CB1', 'RM'],
+    CB1: ['GK', 'RB', 'CB2', 'CM1'],
+    CB2: ['GK', 'CB1', 'LB', 'CM2'],
+    LB:  ['GK', 'CB2', 'LM'],
+    RM:  ['RB', 'CM1', 'ST1'],
+    CM1: ['CB1', 'RM', 'CM2', 'ST1'],
+    CM2: ['CB2', 'CM1', 'LM', 'ST2'],
+    LM:  ['LB', 'CM2', 'ST2'],
+    ST1: ['RM', 'CM1', 'ST2'],
+    ST2: ['CM2', 'LM', 'ST1'],
+  },
 };
 
 function makeUniformLineup(rating: number): Lineup {

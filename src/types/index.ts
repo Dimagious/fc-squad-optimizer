@@ -55,6 +55,12 @@ export interface FormationSlot {
 export interface Formation {
   name: string; // e.g. "4-3-3"
   slots: FormationSlot[]; // always 11 slots
+  /**
+   * Formation adjacency map: slotId → IDs of directly adjacent slots.
+   * Chemistry links are only counted between adjacent slots.
+   * Must be symmetric: if A lists B, then B must list A.
+   */
+  adjacency: Record<string, string[]>;
 }
 
 // ----------------------------------------------------------

@@ -25,6 +25,7 @@ const FIELD_ALIASES: Record<string, SbcField> = {
 
 const ENTITY_LABELS: Record<string, SbcEntityField> = {
   nation: 'nation',
+  nations: 'nation',
   country: 'nation',
   countries: 'nation',
   'countries/regions': 'nation',

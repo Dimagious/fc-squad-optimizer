@@ -13,7 +13,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { parseCSV } from '../adapters/index.js';
 import { getFormations } from '../formations/index.js';
-import { FC25ChemistryEngine } from '../chemistry/fc25.js';
+import { FC26ChemistryEngine } from '../chemistry/fc26.js';
 import { SCORING_PRESETS, applyConfigOverrides } from '../scorer/index.js';
 import { findBestLineups } from '../optimizer/index.js';
 import { explainLineup, generateSwapSuggestions, buildAlternatives, suggestBench } from '../explainer/index.js';
@@ -108,7 +108,7 @@ async function main() {
   // 6. Run optimizer
   if (!opts.json) process.stdout.write(`Searching best XI (mode: ${mode}, ${formations.length} formation(s))...\n`);
 
-  const chemEngine = new FC25ChemistryEngine();
+  const chemEngine = new FC26ChemistryEngine();
   const candidateLimit = Math.max(5, parseInt(opts.candidateLimit, 10) || 15);
   const topN = Math.max(1, parseInt(opts.top, 10) || 3);
 

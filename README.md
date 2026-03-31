@@ -22,7 +22,7 @@ A production-quality CLI tool that reads a CSV export of your EA Sports FC club 
 - **Alternative lineups** - shows the top-N lineups with trade-off deltas
 - **Bench suggestions** - fills 7 bench spots by role
 - **Configurable scoring weights** - override everything via JSON config
-- **Three CSV format adapters** - Club Analyzer, FUTWIZ/FUTbin, and a generic fuzzy-match fallback
+- **Four CSV format adapters** - EA FC Companion/Web App export, Club Analyzer, FUTWIZ/FUTbin, and a generic fuzzy-match fallback
 - **JSON output** - pipe-friendly structured output for integrations
 - **Fast** - typical 300-card club completes in under 1 second
 
@@ -46,6 +46,7 @@ fc-optimizer --input club.csv
 
 ```bash
 # Quickstart - balanced mode, all 9 formations
+# Works directly with EA FC Companion / Web App club exports
 node dist/cli/index.js --input club.csv
 
 # With bench and top-3 alternatives
@@ -108,22 +109,32 @@ The parser auto-detects your export format from the header row:
 
 | Format | Detection | Notes |
 |--------|-----------|-------|
-| **Club Analyzer** | `Overall` + `Alt Pos` + `Card Type` columns | Recommended - richest data |
+| **Companion / Web App export** | `Id` + `Lastname` + `Name` + `Rating` + `Position` + `Rarity` | Recommended - primary supported format |
+| **Club Analyzer** | `Overall` + `Alt Pos` + `Card Type` columns | Legacy adapter for normalized textual exports |
 | **FUTWIZ / FUTbin** | `PAC`, `SHO`, `DRI` stat columns | Individual stats used if OVR missing |
 | **Generic** | Fuzzy column matching | Works with most custom exports |
 
-Minimum required columns: `Name` + `Position`. All other columns are optional (sensible fallbacks used when absent).
+For the primary Companion / Web App export, the parser handles:
 
-Example (Club Analyzer format):
+- split player names (`Name` + `Lastname`)
+- numeric position codes (`0`, `3`, `5`, `7`, `10`, `12`, `14`, `16`, `18`, `23`, `25`, `27`)
+- localized rarities such as `Редкий`, `Обычный`, `КУМИР`, `Герой`, `Команда недели (TOTW)`, and `День рождения FUT`
+- placeholder rows or non-player entries with invalid positions
+
+Minimum required columns for the generic fallback: `Name` + `Position`. All other columns are optional.
+
+Example (Companion / Web App format):
 
 ```csv
-Name,Overall,Position,Alt Pos,Club,League,Nation,Card Type
-Bellingham,91,CAM,CM,Real Madrid,La Liga,England,TOTY
-Messi,91,RW,CAM,Inter Miami,MLS,Argentina,Icon
-Haaland,94,ST,,Manchester City,Premier League,Norway,TOTY
+Id,Lastname,Name,Rating,Position,Rarity,Country,League,Club
+212831,Ramses Becker,Alisson,89,0,Редкий,Brazil,Premier League,Liverpool
+50339411,Pirlo,Andrea,91,18,КУМИР Временного разрыва,Italy,Кумиры,КУМИР
+202126,Kane,Harry,89,25,Команда недели (TOTW),England,Bundesliga,FC Bayern München
 ```
 
-See [`examples/club.sample.csv`](examples/club.sample.csv) for a full example.
+Position codes are converted automatically: `0=GK`, `3=RB`, `5=CB`, `7=LB`, `10=CDM`, `12=RM`, `14=CM`, `16=LM`, `18=CAM`, `23=RW`, `25=ST`, `27=LW`.
+
+See [`examples/club.sample.csv`](examples/club.sample.csv) for the legacy Club Analyzer example.
 
 ## Example Output
 

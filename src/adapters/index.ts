@@ -51,26 +51,87 @@ const KNOWN_POSITIONS: PositionCode[] = [
   'CDM', 'CM', 'CAM', 'RM', 'LM', 'RW', 'LW', 'CF', 'ST',
 ];
 
+const NUMERIC_POSITION_MAP: Record<string, PositionCode> = {
+  '0': 'GK',
+  '3': 'RB',
+  '5': 'CB',
+  '7': 'LB',
+  '10': 'CDM',
+  '12': 'RM',
+  '14': 'CM',
+  '16': 'LM',
+  '18': 'CAM',
+  '23': 'RW',
+  '25': 'ST',
+  '27': 'LW',
+};
+
+function parsePositionToken(raw: string): PositionCode | null {
+  const token = raw.trim().toUpperCase();
+  if (!token) return null;
+  if (KNOWN_POSITIONS.includes(token as PositionCode)) {
+    return token as PositionCode;
+  }
+  return NUMERIC_POSITION_MAP[raw.trim()] ?? null;
+}
+
 function parsePositions(raw: string): PositionCode[] {
   if (!raw) return [];
-  // Positions can be separated by commas, pipes, slashes, spaces
-  const parts = raw.toUpperCase().split(/[,|\/\s]+/).map(p => p.trim());
-  return parts.filter((p): p is PositionCode => KNOWN_POSITIONS.includes(p as PositionCode));
+  const positions = raw
+    .split(/[,|\/;\s]+/)
+    .map(part => parsePositionToken(part))
+    .filter((part): part is PositionCode => part !== null);
+  return [...new Set(positions)];
+}
+
+function buildPlayerName(
+  primaryName: string | undefined,
+  lastName?: string | undefined,
+): string {
+  const first = (primaryName ?? '').trim();
+  const last = (lastName ?? '').trim();
+
+  if (!first) return '';
+  if (!last) return first;
+  if (normalize(first).includes(normalize(last))) return first;
+
+  return `${first} ${last}`.trim();
+}
+
+function isPlaceholderName(name: string): boolean {
+  return name.replace(/[-\s]/g, '') === '';
 }
 
 function detectCardType(raw: string): CardType {
-  const s = (raw ?? '').toLowerCase().replace(/[\s_]/g, '');
-  if (s.includes('icon'))        return 'icon';
-  if (s.includes('hero'))        return 'hero';
-  if (s.includes('toty'))        return 'toty';
-  if (s.includes('tots'))        return 'tots';
-  if (s.includes('potm'))        return 'potm';
-  if (s.includes('birthday'))    return 'fut_birthday';
-  if (s.includes('special'))     return 'special';
-  if (s.includes('raregreen') || s.includes('rareblue') || s === 'rare') return 'rare';
-  if (s.includes('gold'))        return 'gold';
-  if (s.includes('silver'))      return 'silver';
-  if (s.includes('bronze'))      return 'bronze';
+  const s = (raw ?? '').toLowerCase().replace(/[\s_:\-]/g, '');
+  if (s.includes('icon') || s.includes('кумир')) return 'icon';
+  if (s.includes('hero') || s.includes('герой')) return 'hero';
+  if (s.includes('toty')) return 'toty';
+  if (s.includes('tots')) return 'tots';
+  if (s.includes('potm')) return 'potm';
+  if (s.includes('birthday') || s.includes('деньрожденияfut')) return 'fut_birthday';
+  if (
+    s.includes('special') ||
+    s.includes('totw') ||
+    s.includes('fantasyfc') ||
+    s.includes('ретроспектива') ||
+    s.includes('будущиезвезды') ||
+    s.includes('мировоетурне') ||
+    s.includes('почетноеупоминание') ||
+    s.includes('ответитьнавызов') ||
+    s.includes('плейоффаристократии') ||
+    s.includes('развитиемировоготурне')
+  ) return 'special';
+  if (
+    s.includes('raregreen') ||
+    s.includes('rareblue') ||
+    s === 'rare' ||
+    s === 'редкий'
+  ) return 'rare';
+  if (s === 'nonrare' || s === 'обычный') return 'non_rare';
+  if (s.includes('gold') || s.includes('золото')) return 'gold';
+  if (s.includes('silver') || s.includes('серебр')) return 'silver';
+  if (s.includes('bronze') || s.includes('бронз')) return 'bronze';
   return 'unknown';
 }
 
@@ -93,6 +154,7 @@ export class GenericAdapter implements CSVAdapter {
     const headers = Object.keys(row);
 
     const nameCol    = fuzzyFind(headers, ['name', 'player', 'playername', 'player name']);
+    const lastNameCol = fuzzyFind(headers, ['lastname', 'last name', 'surname', 'family name']);
     const ratingCol  = fuzzyFind(headers, ['rating', 'overall', 'ovr', 'ova', 'pac+sho+pas+dri+def+phy', 'total stats']);
     const nationCol  = fuzzyFind(headers, ['nation', 'nationality', 'country']);
     const leagueCol  = fuzzyFind(headers, ['league', 'competition']);
@@ -105,8 +167,8 @@ export class GenericAdapter implements CSVAdapter {
 
     if (!nameCol) return null;
 
-    const name = (row[nameCol] ?? '').trim();
-    if (!name) return null;
+    const name = buildPlayerName(row[nameCol], row[lastNameCol ?? '']);
+    if (!name || isPlaceholderName(name)) return null;
 
     const rawCardType = row[cardCol ?? ''] ?? '';
     const cardType = detectCardType(rawCardType);
@@ -139,12 +201,56 @@ export class GenericAdapter implements CSVAdapter {
       club:      (row[clubCol ?? ''] ?? '').trim(),
       positions,
       cardType,
-      isIcon:    cardType === 'icon' || (row[cardCol ?? ''] ?? '').toLowerCase().includes('icon'),
-      isHero:    cardType === 'hero' || (row[cardCol ?? ''] ?? '').toLowerCase().includes('hero'),
+      isIcon:    cardType === 'icon',
+      isHero:    cardType === 'hero',
       _raw:      row,
     };
 
     return card;
+  }
+}
+
+// ----------------------------------------------------------
+// Companion / Web App club export
+// Headers: Id, Lastname, Name, Rating, Position, Rarity, Country, League, Club
+// ----------------------------------------------------------
+
+export class CompanionClubExportAdapter implements CSVAdapter {
+  private static KNOWN_HEADERS = ['id', 'lastname', 'name', 'rating', 'position', 'rarity', 'country', 'league', 'club'];
+
+  canHandle(headers: string[]): boolean {
+    const normalized = headers.map(normalize);
+    return CompanionClubExportAdapter.KNOWN_HEADERS.every(kh =>
+      normalized.some(h => h === kh)
+    );
+  }
+
+  normalize(row: Record<string, string>, index: number): PlayerCard | null {
+    const rawPosition = row['Position'] ?? row['position'] ?? '';
+    if (rawPosition.trim().startsWith('-')) return null;
+
+    const name = buildPlayerName(
+      row['Name'] ?? row['name'],
+      row['Lastname'] ?? row['LastName'] ?? row['lastname'],
+    );
+    if (!name || isPlaceholderName(name)) return null;
+
+    const rawCard = row['Rarity'] ?? row['rarity'] ?? '';
+    const cardType = detectCardType(rawCard);
+
+    return {
+      id:        `companion_${row['Id'] ?? row['id'] ?? index}`,
+      name,
+      rating:    Math.min(99, Math.max(1, safeInt(row['Rating'] ?? row['rating'], 70))),
+      nation:    (row['Country'] ?? row['country'] ?? '').trim(),
+      league:    (row['League'] ?? row['league'] ?? '').trim(),
+      club:      (row['Club'] ?? row['club'] ?? '').trim(),
+      positions: parsePositions(rawPosition),
+      cardType,
+      isIcon:    cardType === 'icon',
+      isHero:    cardType === 'hero',
+      _raw:      row,
+    };
   }
 }
 
@@ -297,12 +403,13 @@ export function parseCSV(filePath: string): ParseResult {
   const headers = Object.keys(rows[0]);
   const generic = new GenericAdapter();
   const registry = new AdapterRegistry(
-    [new ClubAnalyzerAdapter(), new FutwizAdapter()],
+    [new CompanionClubExportAdapter(), new ClubAnalyzerAdapter(), new FutwizAdapter()],
     generic,
   );
 
   const adapter = registry.selectAdapter(headers);
-  const formatName = adapter instanceof ClubAnalyzerAdapter ? 'Club Analyzer'
+  const formatName = adapter instanceof CompanionClubExportAdapter ? 'Companion / Web App export'
+    : adapter instanceof ClubAnalyzerAdapter ? 'Club Analyzer'
     : adapter instanceof FutwizAdapter ? 'FUTWIZ/FUTbin'
     : 'Generic (fuzzy match)';
 

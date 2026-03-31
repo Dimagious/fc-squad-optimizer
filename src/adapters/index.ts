@@ -106,13 +106,13 @@ function detectCardType(raw: string): CardType {
   const s = (raw ?? '').toLowerCase().replace(/[\s_:\-]/g, '');
   if (s.includes('icon') || s.includes('кумир')) return 'icon';
   if (s.includes('hero') || s.includes('герой')) return 'hero';
+  if (s.includes('totw')) return 'totw';
   if (s.includes('toty')) return 'toty';
   if (s.includes('tots')) return 'tots';
   if (s.includes('potm')) return 'potm';
   if (s.includes('birthday') || s.includes('деньрожденияfut')) return 'fut_birthday';
   if (
     s.includes('special') ||
-    s.includes('totw') ||
     s.includes('fantasyfc') ||
     s.includes('ретроспектива') ||
     s.includes('будущиезвезды') ||

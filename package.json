@@ -4,11 +4,13 @@
   "description": "EA Sports FC best XI optimizer — CLI utility",
   "main": "dist/cli/index.js",
   "bin": {
-    "fc-optimizer": "./dist/cli/index.js"
+    "fc-optimizer": "./dist/cli/index.js",
+    "fc-optimizer-sbc": "./dist/cli/sbc.js"
   },
   "scripts": {
     "build": "tsc",
     "start": "node dist/cli/index.js",
+    "start:sbc": "node dist/cli/sbc.js",
     "dev": "ts-node src/cli/index.ts",
     "test": "jest",
     "test:watch": "jest --watch",

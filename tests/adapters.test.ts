@@ -39,7 +39,7 @@ describe('parseCSV companion export support', () => {
     expect(result.players[2]).toMatchObject({
       name: 'Harry Kane',
       positions: ['ST'],
-      cardType: 'special',
+      cardType: 'totw',
     });
 
     expect(result.players[3]).toMatchObject({

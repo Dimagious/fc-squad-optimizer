@@ -136,7 +136,7 @@ export function calculatePlayerStrength(
   if (player.isIcon) base += config.iconBonus;
   else if (player.isHero) base += config.heroBonus;
 
-  const isSpecial = ['toty', 'tots', 'potm', 'fut_birthday', 'special'].includes(player.cardType);
+  const isSpecial = ['totw', 'toty', 'tots', 'potm', 'fut_birthday', 'special'].includes(player.cardType);
   if (isSpecial) base += config.specialCardBonus;
 
   const pos = getSlotPosition(slotAccepts);

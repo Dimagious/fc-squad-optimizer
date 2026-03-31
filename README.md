@@ -24,6 +24,8 @@ A production-quality CLI tool that reads a CSV export of your EA Sports FC club 
 - **Configurable scoring weights** - override everything via JSON config
 - **Four CSV format adapters** - EA FC Companion/Web App export, Club Analyzer, FUTWIZ/FUTbin, and a generic fuzzy-match fallback
 - **JSON output** - pipe-friendly structured output for integrations
+- **SBC solver CLI** - solves Squad Building Challenges from structured text requirements
+- **Manual ChatGPT prompt** - prints a prompt for screenshot -> requirements extraction without any built-in AI dependency
 - **Fast** - typical 300-card club completes in under 1 second
 
 ## Installation
@@ -72,6 +74,12 @@ node dist/cli/index.js --input club.csv --json | jq '.bestScore'
 
 # Custom scoring weights
 node dist/cli/index.js --input club.csv --config config/scoring.config.json
+
+# SBC solver from a requirements file
+node dist/cli/sbc.js --input club.csv --requirements-file examples/sbc.requirements.sample.txt
+
+# Print the manual ChatGPT prompt for screenshot extraction
+node dist/cli/sbc.js --print-chatgpt-prompt
 ```
 
 ## CLI Flags
@@ -87,6 +95,71 @@ node dist/cli/index.js --input club.csv --config config/scoring.config.json
 | `--verbose` | off | Show per-player chemistry link breakdown |
 | `--json` | off | Output structured JSON instead of formatted table |
 | `--config <path>` | - | JSON file with scoring weight overrides |
+
+## SBC Solver
+
+The repository now ships a separate SBC CLI:
+
+```bash
+node dist/cli/sbc.js --input club.csv --requirements-file requirements.txt
+```
+
+SBC flags:
+
+| Flag | Description |
+|------|-------------|
+| `-i, --input <path>` | Path to the club CSV export |
+| `-r, --requirements <text>` | Inline requirements text |
+| `--requirements-file <path>` | Requirements file generated manually or via ChatGPT |
+| `--candidate-pools <sizes>` | Override heuristic pool sizes, e.g. `32,48,64,80` |
+| `--json` | Structured JSON output |
+| `--print-chatgpt-prompt` | Print the bundled screenshot-extraction prompt |
+
+Supported requirement families:
+
+- field counts: `Nation: Italy OR Northern Ireland: Min 2 Players`
+- same-bucket min/max: `Players from the same League: Max 3`
+- distinct-count min/max: `Clubs in Squad: Min 6`
+- quality floor: `Player Quality: Min Silver`
+- quality/rarity/program counts: `Gold: Min 3 Players`, `Rarity: Rare: Min 1 Player`, `Program: TOTW OR TOTS: Min 1 Player`
+- global thresholds: `Team Rating: Min 78`, `Total Chemistry: Min 26`
+
+Example:
+
+```bash
+node dist/cli/sbc.js \
+  --input club.csv \
+  --requirements-file examples/sbc.requirements.sample.txt
+```
+
+The solver:
+
+- filters the club to cards that can satisfy the quality floor
+- evaluates card "keep value" so strong or rare cards are preserved when possible
+- searches for a valid 11-player combination under SBC constraints
+- reports the submitted cards, achieved rating/chemistry, and a per-constraint check
+
+### Manual ChatGPT Workflow
+
+This project does not send screenshots to any model by itself.
+
+Instead:
+
+1. Print the bundled prompt:
+
+```bash
+node dist/cli/sbc.js --print-chatgpt-prompt
+```
+
+2. Paste that prompt into ChatGPT and attach the SBC screenshot.
+3. Save the returned `requirements.txt` block to a local file.
+4. Run:
+
+```bash
+node dist/cli/sbc.js --input club.csv --requirements-file requirements.txt
+```
+
+See [`examples/sbc.requirements.sample.txt`](examples/sbc.requirements.sample.txt) for the expected format.
 
 ## Optimization Modes
 
@@ -284,10 +357,17 @@ src/
 ├── chemistry/fc25.ts     - FC 25 chemistry engine (implements ChemistryEngine interface)
 ├── scorer/index.ts       - Configurable scoring presets per mode
 ├── adapters/index.ts     - CSV parsing pipeline with adapter registry
+├── sbc/
+│   ├── parser.ts         - SBC requirements text parser
+│   ├── prompt.ts         - manual ChatGPT prompt for screenshot extraction
+│   ├── rating.ts         - SBC squad rating formula
+│   ├── solver.ts         - SBC search and card-preservation heuristics
+│   └── types.ts          - SBC domain types
 ├── optimizer/index.ts    - Backtracking search with branch-and-bound pruning
 ├── explainer/index.ts    - Explanation, swap suggestions, bench analysis
 └── cli/
     ├── index.ts          - Commander CLI entrypoint
+    ├── sbc.ts            - SBC CLI entrypoint
     └── printer.ts        - Chalk terminal renderer + JSON output
 ```
 
@@ -299,13 +379,19 @@ The core modules (`chemistry`, `scorer`, `optimizer`, `explainer`) have **no dep
 npm test
 ```
 
-17 tests across 3 suites, all deterministic:
+78 tests across 9 suites, all deterministic:
 
 | Suite | Tests | Coverage |
 |-------|-------|---------|
-| `chemistry.test.ts` | 6 | Perfect chem, isolated squad, Icons, Heroes, chem cap, nation links |
+| `chemistry.test.ts` | 17 | FC 25 chemistry edge cases and adjacency behavior |
+| `chemistry-fc26.test.ts` | 15 | FC 26 chemistry thresholds, heroes, icons, and manager bonus |
+| `optimizer.test.ts` | 13 | Valid lineups, bronze/silver filtering, chemistry-aware ordering |
+| `optimizer-pool.test.ts` | 11 | Pool frequency analysis and connectivity heuristics |
 | `scorer.test.ts` | 4 | Total rating, mode ordering, compare scores, preset weight sums |
-| `optimizer.test.ts` | 5 | Valid lineup, player uniqueness, all-same-club = 33 chem, max-rating mode, formation count |
+| `adapters.test.ts` | 3 | Companion export parsing and localized card types |
+| `sbc-parser.test.ts` | 2 | Canonical and screenshot-style SBC requirement parsing |
+| `sbc-rating.test.ts` | 3 | SBC squad rating formula and padding behavior |
+| `sbc-solver.test.ts` | 1 | End-to-end SBC solve flow on a themed challenge |
 
 ## Known Limitations
 

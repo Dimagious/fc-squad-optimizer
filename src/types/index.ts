@@ -16,7 +16,7 @@ export type PositionCode =
 export type CardType =
   | 'gold' | 'silver' | 'bronze'
   | 'icon' | 'hero'
-  | 'toty' | 'tots' | 'potm' | 'fut_birthday'
+  | 'totw' | 'toty' | 'tots' | 'potm' | 'fut_birthday'
   | 'special' | 'rare' | 'non_rare' | 'unknown';
 
 export interface PlayerCard {
